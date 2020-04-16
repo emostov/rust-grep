@@ -1,4 +1,4 @@
-use std::{fs, error::Error};
+use std::{error::Error, fs};
 
 // Box<dyn Error> indicates the fn will return a type that implements the Error trait
 // dyn keyword is short for dynamic. It gives us the ability to return different
@@ -7,7 +7,10 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     // Opens file and either gives back the string of the file or
     // returns a Result with an error
     let contents = fs::read_to_string(config.filename)?;
-
+    for line in search(&config.query, &contents) {
+        println!("{}", line);
+    }
+    
     Ok(())
 }
 
@@ -32,7 +35,13 @@ impl Config {
 }
 
 pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    vec![]
+    let mut matches = Vec::new();
+    for line in contents.lines() {
+        if line.contains(query) {
+            matches.push(line);
+        }
+    }
+    matches
 }
 
 #[cfg(test)]
@@ -43,13 +52,10 @@ mod tests {
     fn one_result() {
         let querry = "duct";
         let contents = "\
-        Rust:
-        safe, fast, productive.
-        Pick three.";
+Rust:
+safe, fast, productive
+Pick three.";
 
-        asser_eq(
-            vec!["safe, fast, productive"],
-            search(querry, contents)
-        );
+        assert_eq!(vec!["safe, fast, productive"], search(querry, contents));
     }
 }

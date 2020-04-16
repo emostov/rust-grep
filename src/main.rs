@@ -1,5 +1,5 @@
-use std::{env, process};
 use rustgrep::Config;
+use std::{env, process};
 
 // Responsible for parsing logic, setting up configuration, calling a
 // run function in lib.rs, and handling errors from lib.rs
@@ -24,7 +24,3 @@ fn main() {
         process::exit(1);
     }
 }
-
-
-
-
