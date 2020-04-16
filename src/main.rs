@@ -1,5 +1,5 @@
-use std::env;
-use std::fs;
+use std::{env, process};
+use rustgrep::Config;
 
 // Responsible for parsing logic, setting up configuration, calling a
 // run function in lib.rs, and handling errors from lib.rs
@@ -7,31 +7,24 @@ use std::fs;
 fn main() {
     // Gather and creat vector cl args pass to program, will not accept invlid unicode
     let args: Vec<String> = env::args().collect();
-    let config = Config::new(&args);
+    let config = Config::new(&args).unwrap_or_else(|err| {
+        println!(
+            "There wasv an ISSUE with how you entered arguments :( : {}",
+            err
+        );
+        // Non-zero exit status code to indicate to calling process that the
+        // program exited with an error
+        process::exit(1);
+    });
 
-    // Opens file and returns a Result<String> of the contents
-    let contents =
-        fs::read_to_string(config.filename).expect("Something went wrong reading the file");
+    // dont use unwrap_or_else here because we dont care about ret val when it works
+    if let Err(e) = rustgrep::run(config) {
+        println!("Application error: {}", e);
 
-    println!("With text:\n{}", contents);
-}
-
-struct Config {
-    query: String,
-    filename: String,
-}
-
-impl Config {
-    fn new(args: &[String]) -> Config {
-        if args.len() < 3 {
-            panic!("not enough arguments");
-        }
-
-        // Here, clone is not the most efficient means, but it keeps the code simple
-        // and we only do it once so its const is constant
-        let query = args[1].clone();
-        let filename = args[2].clone();
-
-        Config { query, filename }
+        process::exit(1);
     }
 }
+
+
+
+
